@@ -7,6 +7,27 @@ A production-style data engineering project that extracts raw Airbnb data from A
 This repository demonstrates an end-to-end ELT (Extract, Load, Transform) workflow. Raw CSV files containing Airbnb bookings, hosts, and listings are staged in an AWS S3 bucket. Access is secured via AWS IAM roles, allowing Snowflake to securely ingest the data. From there, dbt handles the transformations, moving data through Bronze, Silver, and Gold layers, ultimately culminating in a single "One Big Table" optimized for downstream BI and analytics.
 
 ## Data Architecture
+## Data Architecture
+
+```mermaid
+graph TD
+    subgraph AWS Cloud
+        S3[(AWS S3<br>Raw CSVs)]
+        IAM{IAM Role}
+        S3 -.-> IAM
+    end
+
+    subgraph Snowflake Data Warehouse
+        IAM -->|Secure Ingestion| Bronze[(Bronze Layer<br>Raw Data)]
+        
+        subgraph dbt Transformations
+            Bronze -->|Clean & Standardize| Silver[(Silver Layer<br>Cleaned Data)]
+            Silver -->|Join & Denormalize| Gold[(Gold Layer<br>One Big Table)]
+        end
+    end
+
+    Gold --> BI([BI / Analytics])
+```
 
 1. **Storage & Ingestion (AWS S3 & IAM):** Raw source files are uploaded to an S3 bucket. IAM rules are configured to establish a secure integration between S3 and Snowflake.
 2. **Data Warehouse (Snowflake):** Acts as the central compute and storage engine, integrated with dbt via the `dbt-snowflake` adapter.
